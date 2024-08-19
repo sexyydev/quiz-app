@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ebf3f9;
+        }
+        header {
+            background-color: #8ecae6;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+        }
+        header h1{
+            font-weight: bolder;
+            color: #023047;
+        }
+        main {
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #023047;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .error-messages p, .success-message p {
+            margin-bottom: 10px;
+        }
+        .error-messages p {
+            color: red;
+        }
+        .success-message p {
+            color: green;
+        }
+        button {
+            background-color: #4b0082;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #6a5acd;
+        }
+        .navigation-links a {
+            margin-right: 10px;
+            color: #023047;
+            text-decoration: none;
+        }
+        .navigation-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Update Profile</h1>
+        <nav class="navigation-links">
+            <a href="{% url 'profile' %}" class="btn btn-light">Back to Profile</a>
+        </nav>
+    </header>
+    <main>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.as_p }}
+            </div>
+            <button type="submit" class="btn btn-info">Save Changes</button>
+        </form>
+    </main>
+</body>
+</html>

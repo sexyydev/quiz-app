@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ebf3f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #023047;
+            font-weight: bolder;
+        }
+        .header p {
+            color: #7f8c8d;
+        }
+        .score-overview, .question-breakdown, .navigation {
+            margin-bottom: 20px;
+        }
+        .score-overview p, .question-breakdown p {
+            font-size: 1rem;
+            color: #2c3e50;
+        }
+        .question {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        .question:last-child {
+            border-bottom: none;
+        }
+        .correct {
+            color: #28a745;
+        }
+        .incorrect {
+            color: #dc3545;
+        }
+        .feedback {
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .navigation a {
+            display: block;
+            color: #007BFF;
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .navigation a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Quiz Results: {{ quiz.title }}</h1>
+            <p>Taken on {{ quiz.taken_on|date:"F j, Y, g:i a" }}</p>
+        </div>
+
+        <!-- Score Overview -->
+        <div class="score-overview">
+            <h2>Score Overview</h2>
+            <p>You scored <strong>{{ result.score }}</strong> out of <strong>{{ quiz.total_score }}</strong></p>
+            <p>Correct: <strong>{{ result.correct_count }}</strong> | Incorrect: <strong>{{ result.incorrect_count }}</strong> | Unanswered: <strong>{{ result.unanswered_count }}</strong></p>
+        </div>
+
+        <!-- Question Breakdown -->
+        <div class="question-breakdown">
+            <h2>Question Breakdown</h2>
+            {% for question in questions %}
+                <div class="question">
+                    <p><strong>Question {{ forloop.counter }}:</strong> {{ question.text }}</p>
+                    <p>Your Answer: <strong>{{ question.user_answer }}</strong> {% if question.is_correct %}<span class="correct">(Correct)</span>{% else %}<span class="incorrect">(Incorrect)</span>{% endif %}</p>
+                    <p>Correct Answer: <strong>{{ question.correct_answer }}</strong></p>
+                    <p>Feedback: <span class="feedback">{{ question.feedback }}</span></p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Chart Visualization -->
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="navigation">
+            <a href="{% url 'quiz_taker_dashboard' %}">Back to Dashboard</a>
+            <a href="{% url 'quiz_performance_analytics' quiz.uuid %}">View Detailed Analytics</a>
+        </div>
+    </div>
+
+    <!-- JavaScript for Chart -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Correct', 'Incorrect', 'Unanswered'],
+                    datasets: [{
+                        label: 'Quiz Performance',
+                        data: [{{ result.correct_count }}, {{ result.incorrect_count }}, {{ result.unanswered_count }}],
+                        backgroundColor: ['#28a745', '#dc3545', '#6c757d'],
+                        borderColor: ['#28a745', '#dc3545', '#6c757d'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    if (label) {
+                                        return label + ': ' + context.raw;
+                                    }
+                                    return context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

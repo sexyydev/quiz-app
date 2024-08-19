@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master Analytics</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #ebf3f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #023047;
+            font-weight: bold;
+        }
+        h2 {
+            margin-top: 20px;
+            border-bottom: 2px solid #00a9cb;
+            padding-bottom: 10px;
+            color: #023047;
+            font-size: 20px;
+        }
+        .statistics, .analytics-section {
+            margin-bottom: 20px;
+        }
+        .statistics ul, .analytics-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .statistics li, .analytics-section li {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #f4f4f4;
+        }
+        .placeholder-message {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz Master Analytics</h1>
+
+        <div class="statistics">
+            <h2>General Statistics</h2>
+            <ul>
+                <li>Total Quizzes: {{ total_quizzes }}</li>
+                <li>Total Questions: {{ total_questions }}</li>
+                <li>Total Attempts: {{ total_attempts }}</li>
+                <li>Average Score: {{ average_score }}</li>
+                <li>Highest Score: {{ highest_score }}</li>
+                <li>Lowest Score: {{ lowest_score }}</li>
+                <li>Completion Rate: {{ completion_rate }}%</li>
+            </ul>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Recent Activity</h2>
+            {% if recent_activity %}
+                <ul>
+                    {% for activity in recent_activity %}
+                        <li>User: {{ activity.user }} - Quiz: {{ activity.quiz }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="placeholder-message">No recent activities.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

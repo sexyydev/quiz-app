@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Taker Analytics</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #ebf3f9;
+        }
+
+        .analytics-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            background-color: #8ecae6;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bolder;
+            color: #023047;
+        }
+
+        .filters {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .filters form {
+            display: inline-block;
+        }
+
+        .filters input[type="date"] {
+            margin: 0 5px;
+        }
+
+        .summary-statistics,
+        .performance-over-time,
+        .category-performance,
+        .individual-quiz-performance,
+        .recent-activity,
+        .feedback-analysis {
+            margin-bottom: 30px;
+        }
+
+        .summary-statistics ul,
+        .feedback-analysis ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .summary-statistics li,
+        .feedback-analysis li {
+            margin-bottom: 10px;
+            color: #007bff;
+            background-color: #e0f7fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #8ecae6;
+            color: #023047;
+        }
+
+        footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-container">
+        <header>
+            <h1>Quiz Taker Analytics</h1>
+            <div class="filters">
+                <form method="get">
+                    <label for="date-range">Date Range:</label>
+                    <input type="date" id="start-date" name="start_date">
+                    <input type="date" id="end-date" name="end_date">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Summary Statistics -->
+        <section class="summary-statistics">
+            <h2>Summary</h2>
+            <ul>
+                <li>Total Quizzes Taken: {{ quizzes_taken }}</li>
+                <li>Average Score: {{ average_score|floatformat:2 }}</li>
+                <li>Highest Score: {% if highest_score %}{{ highest_score }}{% else %}N/A{% endif %}</li>
+                <li>Lowest Score: {% if lowest_score %}{{ lowest_score }}{% else %}N/A{% endif %}</li>
+                <li>Completion Rate: {{ completion_rate|floatformat:2 }}%</li>
+            </ul>
+        </section>
+
+        <!-- Performance Over Time -->
+        <section class="performance-over-time">
+            <h2>Performance Over Time</h2>
+            <canvas id="performance-over-time-chart"></canvas>
+        </section>
+
+        <!-- Category Performance -->
+        <section class="category-performance">
+            <h2>Category Performance</h2>
+            <canvas id="category-performance-chart"></canvas>
+        </section>
+
+        <!-- Individual Quiz Performance -->
+        <section class="individual-quiz-performance">
+            <h2>Individual Quiz Performance</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Quiz</th>
+                        <th>Score</th>
+                        <th>Date Taken</th>
+                        <th>Completion Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in recent_activity %}
+                        <tr>
+                            <td>{{ result.quiz.title }}</td>
+                            <td>{{ result.score }}</td>
+                            <td>{{ result.created_at|date:"F j, Y, g:i a" }}</td>
+                            <td>{{ result.completion_status }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">No recent activity available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+            <h2>Recent Activity</h2>
+            <ul>
+                {% for activity in recent_activity %}
+                    <li>{{ activity.quiz.title }} - {{ activity.score }} ({{ activity.created_at|date:"F j, Y, g:i a" }})</li>
+                {% empty %}
+                    <li>No recent activity available.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- Feedback Analysis -->
+        <section class="feedback-analysis">
+            <h2>Feedback Analysis</h2>
+            {% if feedback_analysis %}
+                <ul>
+                    {% for feedback in feedback_analysis %}
+                        <li>{{ feedback.feedback }} ({{ feedback.count }})</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No feedback available.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Performance Over Time Chart
+            const performanceOverTimeCtx = document.getElementById('performance-over-time-chart').getContext('2d');
+            const performanceOverTimeChart = new Chart(performanceOverTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: [{% for activity in recent_activity %}'{{ activity.created_at|date:"Y-m-d" }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Score',
+                        data: [{% for activity in recent_activity %}{{ activity.score }},{% endfor %}],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { unit: 'day' },
+                            title: { display: true, text: 'Date' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Score' }
+                        }
+                    }
+                }
+            });
+
+            // Category Performance Chart
+            const categoryPerformanceCtx = document.getElementById('category-performance-chart').getContext('2d');
+            const categoryPerformanceChart = new Chart(categoryPerformanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: [{% for category in category_performance %}'{{ category.question__category }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Correct Answers',
+                        data: [{% for category in category_performance %}{{ category.total_correct }},{% endfor %}],
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Total Questions',
+                        data: [{% for category in category_performance %}{{ category.total_questions }},{% endfor %}],
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Count' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

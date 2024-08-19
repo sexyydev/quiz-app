@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzes Taken</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ebf3f9;
+        }
+
+        header {
+            background-color: #8ecae6;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #8ecae6;
+            color: #fff;
+        }
+
+        .score {
+            font-weight: bold;
+        }
+
+        .status {
+            color: green;
+            font-weight: bold;
+        }
+
+        .feedback {
+            font-style: italic;
+            color: #555;
+        }
+
+        .no-data {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quizzes Taken</h1>
+    </header>
+
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Quiz Title</th>
+                    <th>Date Taken</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if quizzes %}
+                    {% for quiz in quizzes %}
+                        <tr>
+                            <td>{{ quiz.title }}</td>
+                            <td>{{ quiz.date_taken }}</td>
+                            <td class="score">{{ quiz.score }} / {{ quiz.total_score }}</td>
+                            <td class="status">{{ quiz.status }}</td>
+                            <td class="feedback">{{ quiz.feedback }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="no-data">No quizzes taken yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
