@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Taker Dashboard</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ebf3f9;
+        }
+
+        header {
+            background-color: #8ecae6;
+            color: #023047;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #34495e;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #023047;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #8ecae6;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            background-color: #023047;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+        }
+
+        .search-bar input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-grow: 1;
+        }
+
+        .search-bar button {
+            margin-left: 5px;
+        }
+
+        nav {
+            background-color: #00a9cb;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome, {{ user.username }}!</h1>
+        <p>Explore your quizzes and performance below.</p>
+    </header>
+    <nav>
+        <a href="{% url 'profile' %}" class="button">Edit Profile</a>
+        <a href="{% url 'logout' %}" class="button">Logout</a>
+    </nav>
+
+    <main>
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search quizzes..." aria-label="Search quizzes">
+            <button id="search-button" class="button">Search</button>
+        </div>
+
+        <!-- Access Quiz by Link -->
+        <div class="section">
+            <h2>Access Quiz</h2>
+            <form id="access-quiz-form" method="POST">
+                {% csrf_token %}
+                <input type="text" id="quiz-link" placeholder="Enter quiz link..." class="form-control" required>
+                <button type="submit" class="button">Go</button>
+            </form>
+        </div>
+
+        <!-- Quizzes Taken -->
+        <div class="section">
+            <h2>Quizzes Taken</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Date Taken</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if quizzes_taken %}
+                        {% for quiz in quizzes_taken %}
+                            <tr>
+                                <td>{{ quiz.quiz.title }}</td>
+                                <td>{{ quiz.created_at }}</td>
+                                <td>{{ quiz.score_percentage }}%</td>
+                                <td>{{ quiz.completion_status }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">No quizzes taken yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="section">
+            <h2>Statistics Overview</h2>
+            <p>Total Quizzes Taken: {{ total_quizzes }}</p>
+            <p>Average Score: {{ average_score }}%</p>
+        </div>
+
+        <!-- Recent Quiz -->
+        <div class="section">
+            <h2>Recent Quiz</h2>
+            {% if recent_activity %}
+                <ul>
+                    {% for activity in recent_activity %}
+                        <li>{{ activity.quiz.title }}: {{ activity.answer }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No recent quizzes taken.</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('search-button').addEventListener('click', function() {
+            const query = document.getElementById('search-input').value;
+            window.location.href = "{% url 'quiz_taker_dashboard' %}?search=" + encodeURIComponent(query);
+        });
+
+        document.getElementById('access-quiz-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const quizLink = document.getElementById('quiz-link').value;
+            const quizUuid = quizLink.split('/').pop();
+            const confirmationUrl = "{% url 'quiz_confirmation' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', quizUuid);
+            window.location.href = confirmationUrl;
+        });
+    </script>
+
+</body>
+</html>

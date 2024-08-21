@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Performance Analytics</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #ebf3f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            background-color: #8ecae6;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #023047;
+        }
+        header h2 {
+            margin: 10px 0 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00a9cb;
+        }
+        .metrics-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .metric h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #023047;
+        }
+        .metric p {
+            font-size: 1.5rem;
+            margin: 10px 0 0;
+            color: #007bff;
+        }
+        .chart-container {
+            margin-bottom: 30px;
+        }
+        .chart-container h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #023047;
+        }
+        .placeholder-message {
+            color: #777;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .recent-activity {
+            margin-bottom: 30px;
+        }
+        .recent-activity h3 {
+            font-size: 1.2rem;
+            color: #023047;
+        }
+        .recent-activity ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .recent-activity li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            color: #007bff;
+        }
+        nav {
+            text-align: center;
+            margin-top: 20px;
+        }
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #007bff;
+            font-size: 1rem;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quiz Performance Analytics</h1>
+            <h2>{{ quiz.title }}</h2>
+        </header>
+
+        <!-- Metrics Summary -->
+        <section class="metrics-summary">
+            <div class="metric">
+                <h3>Total Questions</h3>
+                <p>{{ total_questions }}</p>
+            </div>
+            <div class="metric">
+                <h3>Total Submissions</h3>
+                <p>{{ total_submissions }}</p>
+            </div>
+            <div class="metric">
+                <h3>Average Score</h3>
+                <p>{{ average_score }}</p>
+            </div>
+            <div class="metric">
+                <h3>Highest Score</h3>
+                <p>{{ highest_score }}</p>
+            </div>
+            <div class="metric">
+                <h3>Lowest Score</h3>
+                <p>{{ lowest_score }}</p>
+            </div>
+            <div class="metric">
+                <h3>Completion Rate</h3>
+                <p>{{ completion_rate }}%</p>
+            </div>
+        </section>
+
+        <!-- Time Spent per Question Chart -->
+        <section class="chart-container">
+            <h3>Time Spent per Question</h3>
+            <canvas id="timeSpentChart"></canvas>
+            <p id="timeSpentPlaceholder" class="placeholder-message">No data available for time spent per question.</p>
+        </section>
+
+        <!-- Category Performance Chart -->
+        <section class="chart-container">
+            <h3>Category Performance</h3>
+            <canvas id="categoryPerformanceChart"></canvas>
+            <p id="categoryPerformancePlaceholder" class="placeholder-message">No data available for category performance.</p>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+            <h3>Recent Activity</h3>
+            {% if recent_activity %}
+                <ul>
+                    {% for activity in recent_activity %}
+                        <li>{{ activity.timestamp }} - {{ activity.score }} - {{ activity.feedback }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="placeholder-message">No recent activity available.</p>
+            {% endif %}
+        </section>
+
+        <!-- Feedback Analysis Chart -->
+        <section class="chart-container">
+            <h3>Feedback Analysis</h3>
+            <canvas id="feedbackAnalysisChart"></canvas>
+            <p id="feedbackAnalysisPlaceholder" class="placeholder-message">No feedback analysis data available.</p>
+        </section>
+
+        <!-- Navigation Links -->
+        <nav>
+            <a href="{% url 'quiz_management' %}">Back to Quiz Management</a>
+            <a href="{% url 'quiz_master_dashboard' %}">Back to Dashboard</a>
+        </nav>
+    </div>
+
+    <!-- JavaScript for Charts and Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeSpentData = {{ time_spent_per_question|safe }};
+            const categoryPerformanceData = {{ category_performance|safe }};
+            const feedbackAnalysisData = {{ feedback_analysis|safe }};
+
+            // Time Spent per Question Chart
+            const timeSpentCtx = document.getElementById('timeSpentChart').getContext('2d');
+            new Chart(timeSpentCtx, {
+                type: 'bar',
+                data: {
+                    labels: timeSpentData.map(data => `Question ${data.question}`),
+                    datasets: [{
+                        label: 'Time Spent (seconds)',
+                        data: timeSpentData.map(data => data.total_time),
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Questions' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Time (seconds)' }
+                        }
+                    }
+                }
+            });
+            document.getElementById('timeSpentPlaceholder').style.display = timeSpentData.length ? 'none' : 'block';
+
+            // Category Performance Chart
+            const categoryCtx = document.getElementById('categoryPerformanceChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: categoryPerformanceData.map(data => `Category ${data.question__category}`),
+                    datasets: [{
+                        label: 'Correct Answers',
+                        data: categoryPerformanceData.map(data => data.total_correct),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            document.getElementById('categoryPerformancePlaceholder').style.display = categoryPerformanceData.length ? 'none' : 'block';
+
+            // Feedback Analysis Chart
+            const feedbackCtx = document.getElementById('feedbackAnalysisChart').getContext('2d');
+            new Chart(feedbackCtx, {
+                type: 'bar',
+                data: {
+                    labels: feedbackAnalysisData.map(data => data.feedback),
+                    datasets: [{
+                        label: 'Feedback Count',
+                        data: feedbackAnalysisData.map(data => data.count),
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Feedback' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Count' }
+                        }
+                    }
+                }
+            });
+            document.getElementById('feedbackAnalysisPlaceholder').style.display = feedbackAnalysisData.length ? 'none' : 'block';
+        });
+    </script>
+</body>
+</html>

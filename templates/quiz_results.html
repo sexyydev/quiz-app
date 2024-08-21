@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ebf3f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #8ecae6;
+            color: #023047;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+        }
+        header h1{
+            font-weight: bold;
+        }
+        h2 {
+            color: #023047;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #8ecae6;
+        }
+        nav a {
+            margin-right: 10px;
+            color: white;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: none;
+            color: #023047;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz Results</h1>
+        <nav>
+            <a href="{% url 'quiz_master_dashboard' %}">Dashboard</a>
+            <a href="{% url 'quiz_master_analytics' %}">View Performance Analytics</a>
+            <a href="{% url 'quiz_management' %}">Back to Quiz Management</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Results for Quiz: {{ quiz.title }}</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Quiz Taker</th>
+                    <th>Date Taken</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if results %}
+                    {% for result in results %}
+                        <tr>
+                            <td>{{ result.user.username }}</td>
+                            <td>{{ result.created_at }}</td>
+                            <td>{{ result.score }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center;">No results available for this quiz.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master Dashboard</title>
+    {% load static %}
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #ebf3f9;
+        }
+        header {
+            background-color: #00a9cb;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bolder;
+            color: #023047;
+        }
+        .navbar {
+            background-color: #8ecae6;
+        }
+        .navbar-nav .nav-link {
+            color: #023047;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #a29bfe;
+        }
+        .dashboard-container {
+            margin: 20px;
+        }
+        .summary {
+            margin-bottom: 20px;
+        }
+        .summary h2 {
+            margin-bottom: 10px;
+            color: #023047;
+        }
+        .summary-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .recent-activity {
+            margin-bottom: 20px;
+        }
+        .recent-activity h2 {
+            margin-bottom: 10px;
+            color: #023047;
+        }
+        .activity-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .quiz-list {
+            margin-bottom: 20px;
+        }
+        .quiz-list h2 {
+            margin-bottom: 10px;
+            color: #023047;
+        }
+        .chart {
+            width: 100%;
+            height: 400px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .placeholder-message {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz Master Dashboard</h1>
+    </header>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">QuizMaster</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'quiz_management' %}">Manage Quizzes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create_quiz' %}">Create New Quiz</a>
+                </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="summary">
+            <h2>Summary</h2>
+            <div class="summary-item">
+                <p>Total Quizzes Created: {{ total_quizzes }}</p>
+            </div>
+            <div class="summary-item">
+                <p>Total Participants: {{ total_participants }}</p>
+            </div>
+            <div class="summary-item">
+                <p>Average Score: {{ average_score }}</p>
+            </div>
+        </div>
+
+        <div class="recent-activity">
+            <h2>Recent Activity</h2>
+            {% if recent_activities %}
+                {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <p>{{ activity.user.username }} took {{ activity.quiz.title }} on {{ activity.created_at }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="placeholder-message">No recent activities.</p>
+            {% endif %}
+        </div>
+
+        <div class="quiz-list">
+            <h2>Quizzes</h2>
+            <ul class="list-group">
+                {% for quiz in quizzes %}
+                    <li class="list-group-item">
+                        {{ quiz.title }}
+                        <a href="{% url 'quiz_performance_chart' quiz.uuid %}" class="btn btn-primary float-right ml-2">Download Performance Chart</a>
+                        <button class="btn btn-info float-right" onclick="viewChart('{{ quiz.uuid }}')">View</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Modal for Viewing Chart -->
+    <div class="modal fade" id="chartModal" tabindex="-1" role="dialog" aria-labelledby="chartModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chartModalLabel">Performance Chart</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function viewChart(uuid) {
+            // Fetch the performance data
+            $.ajax({
+                url: `/quiz-performance-chart-data/${uuid}/`,
+                method: 'GET',
+                success: function(data) {
+                    // Display the chart in the modal
+                    $('#chartModal').modal('show');
+                    const ctx = document.getElementById('performanceChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Number of Quiz Takers',
+                                data: data.values,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

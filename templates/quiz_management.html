@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Management</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ebf3f9;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #8ecae6;
+            color: #023047;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #00a9cb;
+            font-weight: bold;
+        }
+        header h1 {
+            font-weight: bolder;
+        }
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .error-messages p, .success-message p {
+            color: red;
+            margin-bottom: 10px;
+        }
+        .success-message p {
+            color: green;
+        }
+        button {
+            background-color: #023047;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #023030;
+        }
+        nav a {
+            margin-right: 10px;
+            color: white;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: none;
+            color: #023030;
+        }
+        #search-button {
+            background-color: #023047;
+            color: #fff;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        #search-button:hover {
+            background-color: #023030;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Quiz Management</h1>
+        <nav>
+            <a href="{% url 'quiz_master_dashboard' %}">Dashboard</a>
+            <a href="{% url 'create_quiz' %}">Create Quiz</a>
+            <a href="{% url 'quiz_master_analytics' %}">Quiz Performance</a>
+        </nav>
+    </header>
+    <main>
+        <!-- Search and Filter Section -->
+        <section id="search-filter">
+            <input type="text" id="search-bar" placeholder="Search quizzes..." aria-label="Search quizzes" value="{{ search_query }}">
+            <button id="search-button">Search</button>
+        </section>
+
+        <!-- Quiz List Table -->
+        <section id="quiz-list">
+            <form method="post" action="{% url 'quiz_management' %}">
+                {% csrf_token %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date Created</th>
+                            <th>Number of Questions</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if quizzes_data %}
+                            {% for data in quizzes_data %}
+                                <tr>
+                                    <td>{{ data.quiz.title }}</td>
+                                    <td>{{ data.quiz.created_at }}</td>
+                                    <td>{{ data.num_questions }}</td>
+                                    <td>
+                                        <a href="{% url 'edit_quiz' data.quiz.uuid %}" class="btn btn-primary">Edit</a>
+                                        <button type="submit" class="btn btn-danger" name="delete" value="{{ data.quiz.uuid }}">Delete</button>
+                                        <button type="button" class="btn btn-info" onclick="copyLink('{{ data.quiz.uuid }}')">Copy Link</button>
+                                        <a href="{% url 'quiz_results' data.quiz.uuid %}" class="btn btn-success">Results</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="text-align: center;">No quizzes available</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('search-button').addEventListener('click', function() {
+            const query = document.getElementById('search-bar').value;
+            window.location.href = "{% url 'quiz_management' %}?search=" + encodeURIComponent(query);
+        });
+
+        function copyLink(uuid) {
+            const baseUrl = window.location.origin;
+            const link = `${baseUrl}/access-quiz/${uuid}`;
+            navigator.clipboard.writeText(link).then(function() {
+                alert('Link has been copied to clipboard');
+            }, function() {
+                alert('Failed to copy link');
+            });
+        }
+    </script>
+</body>
+</html>
