@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ADUN-CBT</title>
+    <style>
+      
+.inp {
+  display: flex;
+  gap: 1em;
+}
+ .wrapper {
+   display: flex;
+   justify-content: space-around;
+   align-items: center;
+   height: 100vh;
+   margin: 0;
+ }
+ .left {
+   width: 1200px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+ }
+ .right {
+   width: 95%;
+   height: 100%;
+   background-color: #8ecae6;
+   color: white;
+   padding: 30px;
+   text-align: center;
+   border-bottom-left-radius: 100%;
+   border-top-left-radius: 100%;
+ }
+ 
+ .right h1 {
+   font-size: 3em;
+   margin-bottom: 20px; 
+   margin-top: 5em;
+   
+ }
+ 
+ .right p {
+   font-size: 1.2em;
+   line-height: 1.5;
+   margin-bottom: 30px; 
+   font-family: "Karla", sans-serif;
+   font-style: normal;
+ }
+ 
+ .right button {
+   background-color: white;
+   padding: 13px;
+   border: none;
+   border-radius: 10px;
+   margin: 5px;
+   width: 15%;
+   font-size: 1.1em;
+   cursor: pointer;
+ }
+ .right button a{
+    color: #023047;
+    text-decoration: none;
+ }
+ .right button:hover {
+   background-color: #00a9cb;
+ } 
+ .right button a:hover {
+    color: #761c01;
+ }
+ .right .pagination {
+   margin-top: 50px;
+ }
+ 
+ .right .pagination span {
+   display: inline-block;
+   width: 10px;
+   height: 10px;
+   background-color: #fff;
+   border-radius: 50%;
+   margin: 0 5px;
+ }
+ 
+ .right .pagination span.active {
+   background-color: #8ecae6;
+ }
+ .img {
+   width: 600px;
+   height: auto;
+ }
+ .container {
+  display: flex;
+  height: 100vh;
+}
+.sidebar {
+  width: 200px;
+  background-color: #ffffff;
+  padding: 20px;
+}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="left">
+    <img class="img" src="{% static 'img1.jpg' %}" alt="Image" />
+  </div>
+  <div class="right">
+    <h1>ADUN-CBT</h1>
+    <p style="font-style: italic;">Embrace a fresh start and achieve better grades with adun-cbt.</p>
+    <button><a href="register.html">Register</a></button>
+    <button><a href="login.html">Log In</a></button>
+    <div class="pagination">
+      <span class="active"></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

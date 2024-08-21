@@ -18,6 +18,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def home_page(request):
+    return render(request,'index.html')
+
 # Registration, login, and profile management views
 def register_view(request):
     if request.method == 'POST':
